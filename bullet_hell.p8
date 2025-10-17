@@ -3,26 +3,48 @@ version 43
 __lua__
 player_x = 64
 player_y = 64
-bullet_active = false
+
+num_of_bullets = 50
+
+function init_bullets(num_of_bullets)
+	bullet_active = {}
+	bullet_side = {}
+	bullet_spawn = {}
+	bullet_progress = {}
+	
+	for i=1,num_of_bullets do
+		bullet_active[i] = false
+		bullet_side[i] = 0
+		bullet_spawn[i] = 0
+		bullet_progress[i] = 0
+	end
+end
+
+
+init_bullets(num_of_bullets)
 
 function _update()
 	update_player()
 	
-	if (not bullet_active) then
-		respawn_bullet()
+	for i=1, num_of_bullets do 
+		if (not bullet_active[i]) then
+			respawn_bullet(i)
+			
+		else
+			move_bullet(i)
+		end
 		
-	else
-		move_bullet()
-	end
-	
-	if bullet_progress > 130 or bullet_progress < -5 then
-		bullet_active = false
+		if bullet_progress[i] > 130 or bullet_progress[i] < -5 then
+		bullet_active[i] = false
+		end
 	end
 end
 
 function _draw()
 	draw_player()
-	draw_bullet()
+	for i=1, num_of_bullets do
+		draw_bullet(i)
+	end
 end
 
 
@@ -33,40 +55,44 @@ function update_player()
 	if (btn(3) and player_y < 120) then player_y += 1 end
 end
 
-function respawn_bullet()
-	bullet_side = flr(rnd(4))
-	bulletspawn_pos = flr(rnd(128))
-	bullet_active = true
-	if bullet_side==1 or bullet_side ==3 then
-	bullet_progress = 127
+
+function respawn_bullet(index)
+	bullet_side[index] = flr(rnd(4))
+	bullet_spawn[index] = flr(rnd(128))
+	bullet_active[index] = true
+	if bullet_side[index] == 1 or bullet_side[index] ==3 then
+	bullet_progress[index] = 127
 	else
-		bullet_progress = 0
+		bullet_progress[index] = 0
 	end
 end
 
-function move_bullet()
-	if bullet_side==0 or bullet_side==2 then
-				bullet_progress += 1
 
-	elseif bullet_side==1 or bullet_side==3 then
-			bullet_progress -= 1
+function move_bullet(index)
+	if bullet_side[index] == 0 or bullet_side[index]==2 then
+				bullet_progress[index] += 1
+
+	elseif bullet_side[index]==1 or bullet_side[index] ==3 then
+			bullet_progress[index] -= 1
 	end
 end
 
-function draw_bullet()
-	if bullet_side==0
-		then spr(2, bullet_progress, bulletspawn_pos)
 
-	elseif bullet_side==1
-		then spr(2, bullet_progress, bulletspawn_pos)
+function draw_bullet(index)
+	if bullet_side[index] ==0
+		then spr(2, bullet_progress[index], bullet_spawn[index])
 
-	elseif bullet_side==2
-		then spr(2, bulletspawn_pos, bullet_progress)
+	elseif bullet_side[index]==1
+		then spr(2, bullet_progress[index], bullet_spawn[index])
+
+	elseif bullet_side[index]==2
+		then spr(2, bullet_spawn[index], bullet_progress[index])
 		
 	else
-		spr(2, bulletspawn_pos, bullet_progress)
+		spr(2, bullet_spawn[index], bullet_progress[index])
 	end
 end
+
 
 function draw_player()
 	cls(1)
