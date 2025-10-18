@@ -4,7 +4,9 @@ __lua__
 player_x = 64
 player_y = 64
 
-num_of_bullets = 50
+num_of_bullets = 100
+max_delay = 8
+delay = 0
 
 function init_bullets(num_of_bullets)
 	bullet_active = {}
@@ -16,7 +18,7 @@ function init_bullets(num_of_bullets)
 		bullet_active[i] = false
 		bullet_side[i] = 0
 		bullet_spawn[i] = 0
-		bullet_progress[i] = 0
+		bullet_progress[i] = -10
 	end
 end
 
@@ -26,16 +28,23 @@ init_bullets(num_of_bullets)
 function _update()
 	update_player()
 	
-	for i=1, num_of_bullets do 
+	for i=1, num_of_bullets do
 		if (not bullet_active[i]) then
+			if delay > 0 then
+				delay -= 1
+				goto continue
+			end
 			respawn_bullet(i)
-			
 		else
 			move_bullet(i)
 		end
 		
-		if bullet_progress[i] > 130 or bullet_progress[i] < -5 then
+		if bullet_progress[i] > 140 or bullet_progress[i] < -12 then
 		bullet_active[i] = false
+		end
+		::continue::
+		if delay <= 0 then
+			delay = flr(rnd(max_delay))
 		end
 	end
 end
@@ -61,9 +70,9 @@ function respawn_bullet(index)
 	bullet_spawn[index] = flr(rnd(128))
 	bullet_active[index] = true
 	if bullet_side[index] == 1 or bullet_side[index] ==3 then
-	bullet_progress[index] = 127
+	bullet_progress[index] = 135
 	else
-		bullet_progress[index] = 0
+		bullet_progress[index] = -10
 	end
 end
 
