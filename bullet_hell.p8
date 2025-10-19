@@ -9,9 +9,13 @@ player.y = 64
 player.width = 4
 player.height = 4
 player.lives = 3
+player.wobble_time = 0
+wobble_buffer = 0
 
 num_of_bullets = 100
 max_delay = 8
+-- how long the player sprite while flash on being hit (in frames)
+wobble_duration = 30
 delay = 0
 
 function init_bullets(num_of_bullets)
@@ -50,11 +54,12 @@ function _update()
 			if player.alive then
 				if detect_collision(i) then
 					if player.lives == 1 then 
-						sfx(o)
+						sfx(1)
 						player.alive = false
 					else 
+						sfx(0)
 						player.lives -= 1
-						-- make him wobble
+						player.wobble_time = wobble_duration/2
 					end
 				end
 			end
@@ -76,6 +81,15 @@ end
 
 
 function update_player()
+	if player.wobble_time > 0 then
+			wobble_buffer -= 0.5
+	end
+	
+	if wobble_buffer == -1 then
+		player.wobble_time -= 1
+		wobble_buffer = 0
+	end
+	
 	if (btn(0) and player.x > 0) then player.x -= 1 end
 	if (btn(1) and player.x < 120) then player.x += 1 end
 	if (btn(2) and player.y > 0) then player.y -= 1 end
@@ -105,6 +119,9 @@ function move_bullet(index)
 end
 
 function detect_collision(index)
+		if player.wobble_time > 0 then
+			return false
+		end
 		if bullet_side[index] ==0 or bullet_side[index]==1 then 
 			bullet_x = bullet_progress[index] 
 			bullet_y = bullet_spawn[index]
@@ -137,7 +154,7 @@ end
 
 function draw_player()
 	cls(1)
-	if player.alive then
+	if player.alive and (player.wobble_time % 2) ==0 then
 		spr(1, player.x, player.y)
 	end
 end
@@ -149,4 +166,5 @@ __gfx__
 00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
-0004000000100001000b2500d2500d2501025013250102500c2500a2500b2500b2500b2500a250072502470024700247002470025700257002570026700277002970000100001000010000100001000010000100
+000300000315005150081500b15008150041500215003100031000310003100031000310002100021002410024100241002410025100251002510026100271002910000100001000010000100001000010000100
+000a0000241101f1501b150181501b15018150161501315016150131500f1500c150022500025014200102000d2000b2000a2000720005200022000a200082000520003200002000120000200032000220001200
