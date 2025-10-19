@@ -8,6 +8,7 @@ player.x = 64
 player.y = 64
 player.width = 4
 player.height = 4
+player.lives = 3
 
 num_of_bullets = 100
 max_delay = 8
@@ -34,30 +35,35 @@ init_bullets(num_of_bullets)
 function _update()
 	update_player()
 	
+	
+	-- step down of delay towards next bullet spawn
+	delay -= 1
 	for i=1, num_of_bullets do
 		if (not bullet_active[i]) then
 			if delay > 0 then
-				delay -= 1
 				goto continue
 			end
 			respawn_bullet(i)
+			delay = flr(rnd(max_delay))
 		else
 			move_bullet(i)
 			if player.alive then
 				if detect_collision(i) then
-					sfx(o)
-					player.alive = false
+					if player.lives == 1 then 
+						sfx(o)
+						player.alive = false
+					else 
+						player.lives -= 1
+						-- make him wobble
+					end
 				end
 			end
 		end
 		
 		if bullet_progress[i] > 140 or bullet_progress[i] < -12 then
-		bullet_active[i] = false
+			bullet_active[i] = false
 		end
 		::continue::
-		if delay <= 0 then
-			delay = flr(rnd(max_delay))
-		end
 	end
 end
 
@@ -109,6 +115,9 @@ function detect_collision(index)
 		end
 		
 		if bullet_x >= (player.x-1) and bullet_x <= (player.x + player.width) and bullet_y >= (player.y-1) and bullet_y <= (player.y + player.width) then
+			bullet_progress[index] = -10
+			bullet_spawn[index] = -10
+			bullet_active[index] = false
 			return true
 		else
 			return false
