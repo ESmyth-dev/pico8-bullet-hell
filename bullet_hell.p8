@@ -20,6 +20,7 @@ delay = 0
 
 function init_bullets(num_of_bullets)
 	bullet_active = {}
+	bullet_type = {}
 	bullet_side = {}
 	bullet_spawn = {}
 	bullet_progress = {}
@@ -28,6 +29,7 @@ function init_bullets(num_of_bullets)
 		bullet_active[i] = false
 		bullet_side[i] = 0
 		bullet_spawn[i] = 0
+		bullet_type[i] = 0
 		bullet_progress[i] = -10
 	end
 end
@@ -100,6 +102,11 @@ end
 function respawn_bullet(index)
 	bullet_side[index] = flr(rnd(4))
 	bullet_spawn[index] = flr(rnd(128))
+	if flr(rnd(10)) == 0 then
+		bullet_type[index] = 1
+	else
+		bullet_type[index] = 0
+	end
 	bullet_active[index] = true
 	if bullet_side[index] == 1 or bullet_side[index] ==3 then
 	bullet_progress[index] = 135
@@ -110,11 +117,17 @@ end
 
 
 function move_bullet(index)
-	if bullet_side[index] == 0 or bullet_side[index]==2 then
-				bullet_progress[index] += 1
+	if bullet_type[index] == 0 then
+		bullet_speed = 1
+	else
+		bullet_speed = 2
+	end
 
-	elseif bullet_side[index]==1 or bullet_side[index] ==3 then
-			bullet_progress[index] -= 1
+	if bullet_side[index] == 0 or bullet_side[index]==2 then
+			bullet_progress[index] += bullet_speed
+
+	else
+			bullet_progress[index] -= bullet_speed
 	end
 end
 
@@ -143,11 +156,13 @@ end
 
 
 function draw_bullet(index)
+	sprite = bullet_type[index] + 2
+
 	if bullet_side[index] == 0 or bullet_side[index] == 1 then
-		spr(2, bullet_progress[index], bullet_spawn[index])
+		spr(sprite, bullet_progress[index], bullet_spawn[index])
 
 	else
-		spr(2, bullet_spawn[index], bullet_progress[index])
+		spr(sprite, bullet_spawn[index], bullet_progress[index])
 	end
 end
 
@@ -159,8 +174,8 @@ function draw_player()
 	end
 end
 __gfx__
-00000000777700008800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000777700008800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000007777000088000000bb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000007777000088000000bb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00700700777700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00077000777700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
