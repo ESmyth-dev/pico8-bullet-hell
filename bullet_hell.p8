@@ -2,9 +2,6 @@ pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
 player = {}
-
-sides = {top = 0, bottom = 1, left = 2, right = 3}
-
 player.alive = true
 player.x = 64
 player.y = 64
@@ -14,52 +11,55 @@ player.hitbox_x = 2
 player.hitbox_y = 0
 player.lives = 3
 player.wobble_time = 0
+
+
+sides = {top = 0, bottom = 1, left = 2, right = 3}
+
 wobble_buffer = 0
 
-num_of_bullets = 100
+num_of_bugs = 100
 max_delay = 8
 -- how long the player sprite while flash on being hit (in frames)
 wobble_duration = 30
 delay = 0
 
+-- use navy for invisible, black is used
 palt(0, false)
 palt(1, true)
 
-function init_bullets(num_of_bullets)
-	bullet_active = {}
-	bullet_type = {}
-	bullet_side = {}
-	bullet_spawn = {}
-	bullet_progress = {}
+function init_bugs(num_of_bugs)
+	bugs = {}
 	
-	for i=1,num_of_bullets do
-		bullet_active[i] = false
-		bullet_side[i] = sides.top
-		bullet_spawn[i] = 0
-		bullet_type[i] = 0
-		bullet_progress[i] = -10
+	for i=1,num_of_bugs do
+		bug = {}
+		add(bugs, bug, i)
+		bugs[i].active = false
+		bugs[i].side = sides.top
+		bugs[i].spawn = 0
+		bugs[i].type = 0
+		bugs[i].progress = -10
 	end
 end
 
 
-init_bullets(num_of_bullets)
+init_bugs(num_of_bugs)
 
 -- main update function
 function _update()
 	update_player()
 	
 	
-	-- step down of delay towards next bullet spawn
+	-- step down of delay towards next bug spawn
 	delay -= 1
-	for i=1, num_of_bullets do
-		if (not bullet_active[i]) then
+	for i=1, num_of_bugs do
+		if (not bugs[i].active) then
 			if delay > 0 then
 				goto continue
 			end
-			respawn_bullet(i)
+			respawn_bug(i)
 			delay = flr(rnd(max_delay))
 		else
-			move_bullet(i)
+			move_bug(i)
 			if player.alive then
 				if detect_collision(i) then
 					if player.lives == 1 then 
@@ -74,8 +74,8 @@ function _update()
 			end
 		end
 		
-		if bullet_progress[i] > 140 or bullet_progress[i] < -12 then
-			bullet_active[i] = false
+		if bugs[i].progress > 140 or bugs[i].progress < -12 then
+			bugs[i].active = false
 		end
 		::continue::
 	end
@@ -83,8 +83,8 @@ end
 
 function _draw()
 	draw_player()
-	for i=1, num_of_bullets do
-		draw_bullet(i)
+	for i=1, num_of_bugs do
+		draw_bug(i)
 	end
 end
 
@@ -106,35 +106,29 @@ function update_player()
 end
 
 
-function respawn_bullet(index)
-	bullet_side[index] = flr(rnd(4))
-	bullet_spawn[index] = flr(rnd(128))
+function respawn_bug(index)
+	bugs[index].side = flr(rnd(4))
+	bugs[index].spawn = flr(rnd(128))
 	if flr(rnd(10)) == 0 then
-		bullet_type[index] = 1
+		bugs[index].type = 1
 	else
-		bullet_type[index] = 0
+		bugs[index].type = 0
 	end
-	bullet_active[index] = true
-	if bullet_side[index] == sides.bottom or bullet_side[index] ==sides.right then
-	bullet_progress[index] = 135
+	bugs[index].active = true
+	if bugs[index].side == sides.bottom or bugs[index].side ==sides.right then
+	bugs[index].progress = 135
 	else
-		bullet_progress[index] = -10
+		bugs.progress = -10
 	end
 end
 
 
-function move_bullet(index)
-	if bullet_type[index] == 0 then
-		bullet_speed = 1
-	else
-		bullet_speed = 2
-	end
-
-	if bullet_side[index] == sides.left or bullet_side[index]==sides.top then
-			bullet_progress[index] += bullet_speed
+function move_bug(index)
+	if bugs[index].side == sides.left or bugs[index].side==sides.top then
+			bugs[index].progress += (bugs[index].type + 1)
 
 	else
-			bullet_progress[index] -= bullet_speed
+			bugs[index].progress -= (bugs[index].type + 1)
 	end
 end
 
@@ -142,19 +136,19 @@ function detect_collision(index)
 		if player.wobble_time > 0 then
 			return false
 		end
-		if bullet_side[index] ==sides.top or bullet_side[index]==sides.bottom then 
-			bullet_x = bullet_progress[index] 
-			bullet_y = bullet_spawn[index]
+		if bugs[index].side ==sides.top or bugs[index].side==sides.bottom then 
+			bug_x = bugs[index].progress 
+			bug_y = bugs[index].spawn
 		
 		else	
-			bullet_y = bullet_progress[index] 
-			bullet_x = bullet_spawn[index]
+			bug_y = bugs[index].progress 
+			bug_x = bugs[index].spawn
 		end
 		
-		if bullet_x >= (player.x + player.hitbox_x) and bullet_x <= (player.x + player.hitbox_x + player.width) and bullet_y >= (player.y + player.hitbox_y) and bullet_y <= (player.y + player.hitbox_y + player.height) then
-			bullet_progress[index] = -10
-			bullet_spawn[index] = -10
-			bullet_active[index] = false
+		if bug_x >= (player.x + player.hitbox_x) and bug_x <= (player.x + player.hitbox_x + player.width) and bug_y >= (player.y + player.hitbox_y) and bug_y <= (player.y + player.hitbox_y + player.height) then
+			bugs[index].progress = -10
+			bugs[index].spawn = -10
+			bugs[index].active = false
 			return true
 		else
 			return false
@@ -162,32 +156,26 @@ function detect_collision(index)
 end
 
 
-function draw_bullet(index)
-	if bullet_type[index] == 0 then
-		if bullet_side[index] == sides.right or bullet_side[index] == sides.left then
-			sprite_x = 24
-			sprite_y = 11
-		else
-			sprite_x = 24
-			sprite_y = 8
-		end
+function draw_bug(index)
+	if bugs[index].type == 0 then
+		sprite_x = 24
 	else
-		if bullet_side[index] == sides.right or bullet_side[index] == sides.left then
-			sprite_x = 27
-			sprite_y = 11
-		else
- 		sprite_x = 27
-	 	sprite_y = 8
-	 end
+		sprite_x = 27
 	end
 	
-	if bullet_side[index] == sides.top then flip_y = true else flip_y = false end
-	if bullet_side[index] == sides.right then flip_x = true else flip_x = false end
-	
-	if bullet_side[index] == sides.left or bullet_side[index] == sides.right then
-		sspr(sprite_x, sprite_y, 3, 3, bullet_progress[index], bullet_spawn[index], 3, 3, flip_x, flip_y)
+	if bugs[index].side == sides.top or bugs[index].side == sides.bottom then
+		sprite_y = 8
 	else
-		sspr(sprite_x, sprite_y, 3, 3, bullet_spawn[index], bullet_progress[index], 3, 3, flip_x, flip_y)
+		sprite_y = 11
+	end
+	
+	if bugs[index].side == sides.top then flip_y = true else flip_y = false end
+	if bugs[index].side == sides.right then flip_x = true else flip_x = false end
+	
+	if bugs[index].side == sides.left or bugs[index].side == sides.right then
+		sspr(sprite_x, sprite_y, 3, 3, bugs[index].progress, bugs[index].spawn, 3, 3, flip_x, flip_y)
+	else
+		sspr(sprite_x, sprite_y, 3, 3, bugs[index].spawn, bugs[index].progress, 3, 3, flip_x, flip_y)
 	end
 end
 
