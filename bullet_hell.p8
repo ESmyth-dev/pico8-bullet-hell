@@ -3,6 +3,8 @@ version 43
 __lua__
 player = {}
 
+sides = {top = 0, bottom = 1, left = 2, right = 3}
+
 player.alive = true
 player.x = 64
 player.y = 64
@@ -32,7 +34,7 @@ function init_bullets(num_of_bullets)
 	
 	for i=1,num_of_bullets do
 		bullet_active[i] = false
-		bullet_side[i] = 0
+		bullet_side[i] = sides.top
 		bullet_spawn[i] = 0
 		bullet_type[i] = 0
 		bullet_progress[i] = -10
@@ -113,7 +115,7 @@ function respawn_bullet(index)
 		bullet_type[index] = 0
 	end
 	bullet_active[index] = true
-	if bullet_side[index] == 1 or bullet_side[index] ==3 then
+	if bullet_side[index] == sides.bottom or bullet_side[index] ==sides.right then
 	bullet_progress[index] = 135
 	else
 		bullet_progress[index] = -10
@@ -128,7 +130,7 @@ function move_bullet(index)
 		bullet_speed = 2
 	end
 
-	if bullet_side[index] == 0 or bullet_side[index]==2 then
+	if bullet_side[index] == sides.left or bullet_side[index]==sides.top then
 			bullet_progress[index] += bullet_speed
 
 	else
@@ -140,7 +142,7 @@ function detect_collision(index)
 		if player.wobble_time > 0 then
 			return false
 		end
-		if bullet_side[index] ==0 or bullet_side[index]==1 then 
+		if bullet_side[index] ==sides.top or bullet_side[index]==sides.bottom then 
 			bullet_x = bullet_progress[index] 
 			bullet_y = bullet_spawn[index]
 		
@@ -162,17 +164,30 @@ end
 
 function draw_bullet(index)
 	if bullet_type[index] == 0 then
-		sprite_x = 24
-		sprite_y = 8
+		if bullet_side[index] == sides.right or bullet_side[index] == sides.left then
+			sprite_x = 24
+			sprite_y = 11
+		else
+			sprite_x = 24
+			sprite_y = 8
+		end
 	else
-		sprite_x = 27
-		sprite_y = 8
+		if bullet_side[index] == sides.right or bullet_side[index] == sides.left then
+			sprite_x = 27
+			sprite_y = 11
+		else
+ 		sprite_x = 27
+	 	sprite_y = 8
+	 end
 	end
-
-	if bullet_side[index] == 0 or bullet_side[index] == 1 then
-		sspr(sprite_x, sprite_y, 3, 3, bullet_progress[index], bullet_spawn[index])
+	
+	if bullet_side[index] == sides.top then flip_y = true else flip_y = false end
+	if bullet_side[index] == sides.right then flip_x = true else flip_x = false end
+	
+	if bullet_side[index] == sides.left or bullet_side[index] == sides.right then
+		sspr(sprite_x, sprite_y, 3, 3, bullet_progress[index], bullet_spawn[index], 3, 3, flip_x, flip_y)
 	else
-		sspr(sprite_x, sprite_y, 3, 3, bullet_spawn[index], bullet_progress[index])
+		sspr(sprite_x, sprite_y, 3, 3, bullet_spawn[index], bullet_progress[index], 3, 3, flip_x, flip_y)
 	end
 end
 
@@ -195,9 +210,9 @@ __gfx__
 00000000111ff77ff77ff11110110111bb0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000111ff70ff07ff11170770711bb0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000111ffffffffff1111011a111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111f0ffffff0f11111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111ff000000ff11111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111ffffffffff11111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000111f0ffffff0f11117117111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000111ff000000ff111000a0011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000111ffffffffff11117117111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000111f11111111f11111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000011ff11111111ff1111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000001188877811a1111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
