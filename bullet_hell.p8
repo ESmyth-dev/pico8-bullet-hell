@@ -13,6 +13,7 @@ player.lives = 3
 player.wobble_time = 0
 
 
+bug_types = {normal = 0, fast = 1}
 sides = {top = 0, bottom = 1, left = 2, right = 3}
 
 wobble_buffer = 0
@@ -36,7 +37,7 @@ function init_bugs(num_of_bugs)
 		bugs[i].active = false
 		bugs[i].side = sides.top
 		bugs[i].spawn = 0
-		bugs[i].type = 0
+		bugs[i].type = bug_types.normal
 		bugs[i].progress = -10
 	end
 end
@@ -110,9 +111,9 @@ function respawn_bug(index)
 	bugs[index].side = flr(rnd(4))
 	bugs[index].spawn = flr(rnd(128))
 	if flr(rnd(10)) == 0 then
-		bugs[index].type = 1
+		bugs[index].type = bug_types.fast
 	else
-		bugs[index].type = 0
+		bugs[index].type = bug_types.normal
 	end
 	bugs[index].active = true
 	if bugs[index].side == sides.bottom or bugs[index].side ==sides.right then
@@ -136,13 +137,13 @@ function detect_collision(index)
 		if player.wobble_time > 0 then
 			return false
 		end
-		if bugs[index].side ==sides.top or bugs[index].side==sides.bottom then 
-			bug_x = bugs[index].progress 
+		if bugs[index].side ==sides.left or bugs[index].side==sides.right then 
+			bug_x = bugs[index].progress + 1 
 			bug_y = bugs[index].spawn
 		
 		else	
-			bug_y = bugs[index].progress 
-			bug_x = bugs[index].spawn
+			bug_y = bugs[index].progress + 1 
+			bug_x = bugs[index].spawn + 2
 		end
 		
 		if bug_x >= (player.x + player.hitbox_x) and bug_x <= (player.x + player.hitbox_x + player.width) and bug_y >= (player.y + player.hitbox_y) and bug_y <= (player.y + player.hitbox_y + player.height) then
@@ -157,7 +158,7 @@ end
 
 
 function draw_bug(index)
-	if bugs[index].type == 0 then
+	if bugs[index].type == bug_types.normal then
 		sprite_x = 24
 	else
 		sprite_x = 27
