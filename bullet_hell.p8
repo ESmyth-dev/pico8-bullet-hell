@@ -1,63 +1,50 @@
 pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
-player = {}
-player.alive = true
-player.x = 64
-player.y = 64
-player.width = 5
-player.height = 8
-player.hitbox_x = 2
-player.hitbox_y = 0
-player.lives = 3
-player.wobble_time = 0
-player.bob = 1
-player.sprite_x = 8
-player.sprite_y = 17
-
-intensity = 0
-
-
-bug_types = {normal = 0, fast = 1}
-sides = {top = 0, bottom = 1, left = 2, right = 3}
-
-wobble_buffer = 0
-
+-- maximum possible number of bugs on the screen
 num_of_bugs = 100
+-- delay between bugs spawning to stop them being in sync
 max_delay = 8
--- how long the player sprite while flash on being hit (in frames)
+-- how long the player sprite will flash on being hit (in frames)
 wobble_duration = 30
-delay = 0
 
--- use navy for invisible, black is used
-palt(0, false)
-palt(1, true)
-
-function init_bugs(num_of_bugs)
-	bugs = {}
+function _init()
+	player = {}
+	player.alive = true
+	player.x = 64
+	player.y = 64
+	player.width = 5
+	player.height = 8
+	player.hitbox_x = 2
+	player.hitbox_y = 0
+	player.lives = 3
+	player.wobble_time = 0
+	player.bob = 1
+	player.sprite_x = 8
+	player.sprite_y = 17
 	
-	for i=1,num_of_bugs do
-		bug = {}
-		add(bugs, bug, i)
-		bugs[i].active = false
-		bugs[i].side = sides.top
-		bugs[i].spawn = 0
-		bugs[i].type = bug_types.normal
-		bugs[i].progress = -10
-	end
+	shake_intensity = 0
+	wobble_buffer = 0
+
+	bug_types = {normal = 0, fast = 1}
+	sides = {top = 0, bottom = 1, left = 2, right = 3}
+
+	delay = 0
+	-- use navy for invisible, black is used
+	palt(0, false)
+	palt(1, true)
+	
+	init_bugs(num_of_bugs)
 end
-
-
-init_bugs(num_of_bugs)
 
 -- main update function
 function _update()
-	if intensity > 0 then shake() end
+	if shake_intensity > 0 then shake() end
+	
 	if player.hit then
-			--print("\^3")
-			intensity = 5
+			shake_intensity = 5
 			player.hit = false
-		end
+	end
 	update_player()
 	
 	
@@ -152,6 +139,19 @@ function respawn_bug(index)
 	end
 end
 
+function init_bugs(num_of_bugs)
+	bugs = {}
+	
+	for i=1,num_of_bugs do
+		bug = {}
+		add(bugs, bug, i)
+		bugs[i].active = false
+		bugs[i].side = sides.top
+		bugs[i].spawn = 0
+		bugs[i].type = bug_types.normal
+		bugs[i].progress = -10
+	end
+end
 
 function move_bug(index)
 	if bugs[index].side == sides.left or bugs[index].side==sides.top then
@@ -218,15 +218,15 @@ function draw_player()
 end
 
 function shake()
- local shake_x=rnd(intensity) - (intensity /2)
- local shake_y=rnd(intensity) - (intensity /2)
+ local shake_x=rnd(shake_intensity) - (shake_intensity /2)
+ local shake_y=rnd(shake_intensity) - (shake_intensity /2)
 
  --offset the camera
  camera( shake_x, shake_y )
 
  --ease shake and return to normal
- intensity *= .5
- if intensity < .3 then intensity = 0 end
+ shake_intensity *= .5
+ if shake_intensity < .3 then shake_intensity = 0 end
 end
 __gfx__
 00000000111118888881111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
