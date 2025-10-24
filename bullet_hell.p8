@@ -25,6 +25,7 @@ function _init()
 	
 	shake_intensity = 0
 	wobble_buffer = 0
+	time_t = 0
 
 	bug_types = {normal = 0, fast = 1}
 	sides = {top = 0, bottom = 1, left = 2, right = 3}
@@ -38,18 +39,18 @@ function _init()
 end
 
 -- main update function
-function _update()
-	if shake_intensity > 0 then shake() end
-	
+function _update()	
 	if player.hit then
-			shake_intensity = 5
-			player.hit = false
+		shake_intensity = 5
+		player.hit = false
 	end
 	update_player()
 	
-	
+	time_t = (time_t + 0.001) % 1
+	sin_t = sin(time_t)
 	-- step down of delay towards next bug spawn
-	delay -= 1
+	delay -= (1.5 + sin_t)
+	if delay < 0.2 then delay = 0 end
 	for i=1, num_of_bugs do
 		if (not bugs[i].active) then
 			if delay > 0 then
@@ -84,13 +85,14 @@ end
 
 function _draw()
 	cls(1)
-	
+	if shake_intensity > 0 then shake() end
 		
 	for i=1, num_of_bugs do
 		draw_bug(i)
 	end
 	draw_player()
 	camera()
+	print("sin_t" .. sin_t, 10, 10)
 end
 
 
