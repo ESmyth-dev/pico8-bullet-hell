@@ -211,7 +211,7 @@ function draw_bug(index)
 	bugs[index].flap_time += 1
 	if (bugs[index].flap_time > 0) then
 		sprite_x += 6
-	end
+	end`
 	if bugs[index].flap_time==5 then
 		bugs[index].flap_time = -5
 	end
