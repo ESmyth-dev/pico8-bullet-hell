@@ -7,6 +7,8 @@ num_of_bugs = 100
 max_delay = 8
 -- how long the player sprite will flash on being hit (in frames)
 wobble_duration = 30
+-- time delay before screen transition after death
+death_delay = 100
 
 function _init()
 	player = {}
@@ -23,10 +25,13 @@ function _init()
 	player.sprite_x = 8
 	player.sprite_y = 17
 	time_begin = time()
-	
+
+	time_dead = 0	
+	start_radius = 5
 	shake_intensity = 0
 	wobble_buffer = 0
 	time_t = 0
+	on_title = true
 
 	bug_types = {normal = 0, fast = 1}
 	sides = {top = 0, bottom = 1, left = 2, right = 3}
@@ -40,7 +45,10 @@ function _init()
 end
 
 -- main update function
-function _update()	
+function _update()
+	if on_title then
+		return
+	end	
 	if player.hit then
 		shake_intensity = 5
 		player.hit = false
@@ -89,16 +97,39 @@ function _update()
 end
 
 function _draw()
+
+	if on_title then
+		draw_title()
+		if btn(4) and btn(5) then
+			on_title = false
+		end
+		return
+	end
+	
 	cls(1)
 	if shake_intensity > 0 then shake() end
-		
+	
 	for i=1, num_of_bugs do
 		draw_bug(i)
 	end
 	draw_player()
 	camera()
-	print("sin_t " .. sin_t, 10, 10)
-	print("time\nalive: " .. time_alive, 80, 10)
+	if not player.alive then
+		time_dead += 1
+	end 
+	if time_dead > death_delay then
+		start_radius += 1.2
+		circfill(64, 64, start_radius, 0)
+	end
+	
+	if start_radius > 70 then
+		print ("you have died,\npress ❎ and 🅾️ to play again!", 10, 64, 7)
+		if btn(4) and btn(5) then
+			extcmd("reset")
+		end
+	end
+	print("sin_t " .. sin_t, 10, 10, 7)
+	print("time\nalive: " .. time_alive, 80, 10, 7)
 end
 
 
@@ -211,7 +242,7 @@ function draw_bug(index)
 	bugs[index].flap_time += 1
 	if (bugs[index].flap_time > 0) then
 		sprite_x += 6
-	end`
+	end
 	if bugs[index].flap_time==5 then
 		bugs[index].flap_time = -5
 	end
@@ -228,10 +259,15 @@ end
 
 
 function draw_player()
-	
 	if player.alive and (player.wobble_time % 2) ==0 then
 		sspr(player.sprite_x, player.sprite_y, 10, 10, player.x, player.y)
 	end
+end
+
+function draw_title()
+	cls(0)
+	print("welcome to\n mushroom mania!", 10, 10, 7)
+	print("press ❎ and 🅾️ to begin!", 10, 64, 7)
 end
 
 function shake()
